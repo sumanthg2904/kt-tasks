@@ -1,0 +1,49 @@
+pipeline{
+    
+    agent any
+    
+    environment {
+        DOCKER_CREDENTIALS = credentials('sumanth2904') // Reference your credentials ID
+    }
+    
+    stages{
+        stage('git cloning'){
+            steps{
+                git credentialsId: 'sumanthg2904', url: 'https://github.com/sumanthg2904/my-sep-24-task-repo.git'
+            }
+        }
+        
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    sh 'echo "$DOCKER_CREDENTIALS_PSW" | docker login -u "$DOCKER_CREDENTIALS_USR" --password-stdin'
+                }
+            }
+        }
+        
+        stage('building the docker image'){
+            steps{
+                script{
+                    sh 'docker build -t sumanth2904/hms-web .'
+                }
+            }
+        }
+        
+        stage('push'){
+            steps{
+                script{
+                    sh 'docker push sumanth2904/hms-web'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh 'docker run -d -p 8300:80 sumanth2904/hms-web' // Adjust as needed
+                }
+            }
+        }
+    }
+    
+}
